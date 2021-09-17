@@ -7,6 +7,7 @@ noiseArr = []
 imgNumber = 10
 
 def setImg(x):
+    noiseArr = []
     global imgNumber
     imgNumber = x
     cv2.imshow('noise', getNoiseImg(img))
@@ -17,10 +18,10 @@ def setImg(x):
     cv2.imshow('made', n.astype(np.uint8))
 
 
-def getNoiseImg(img):
-    noise = np.zeros(img.shape, np.int8)
+def getNoiseImg(imgg):
+    noise = np.zeros(imgg.shape, np.int8)
     cv2.randu(noise, lowVal, highVal)
-    buf = cv2.add(img, noise, dtype=cv2.CV_8UC3)
+    buf = cv2.add(imgg, noise, dtype=cv2.CV_8UC3)
     return buf
 
 def setlowval(x):
