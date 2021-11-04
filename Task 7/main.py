@@ -32,7 +32,7 @@ def putTextImage(im, text):
 image = cv2.imread("lena.jpg")
 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 image = cv2.resize(image, (400, 400))
-noised = create_noise_img(image, 70, True)
+noised = create_noise_img(image, 30, True)
 
 gaus_blur = cv2.blur(noised, (3, 3))
 median_blur = cv2.medianBlur(noised, 3)
@@ -46,7 +46,7 @@ sobelx = cv2.Sobel(noised, cv2.CV_8U, 1, 0, ksize=3)
 sobely = cv2.Sobel(noised, cv2.CV_8U, 0, 1, ksize=3)
 sobelxy = cv2.Sobel(noised, cv2.CV_8U, 1, 1, ksize=3)
 
-laplas = cv2.Laplacian(image, cv2.CV_8U, ksize=3)
+laplas = cv2.Laplacian(noised, cv2.CV_8U, ksize=3)
 
 transforms = {"orig": noised, "gaus_blur": gaus_blur, "medianBlur": median_blur,
               "filter": ker_filter, "sobelx": sobelx, "sobely": sobely,
