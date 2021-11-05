@@ -18,7 +18,7 @@ class ShapeDetector:
             (x, y, w, h) = cv2.boundingRect(approx)
             ar = w / float(h)
             shape = "square" if 0.95 <= ar <= 1.05 else "rectangle"
-        elif 5 < len(approx) < 7:
+        elif 4 < len(approx) < 8:
             shape = "oval"
         else:
             shape = "circle"
@@ -31,10 +31,11 @@ img = cv2.imread('shapes.jpg')
 resized = imutils.resize(img, width=600)
 ratio = img.shape[0] / float(resized.shape[0])
 gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
-thresh = cv2.threshold(gray, 60, 255, cv2.THRESH_BINARY)[1]
+
+canny_output = cv2.Canny(gray, 60, 255)
 # find contours in the thresholded image and initialize the
 # shape detector
-cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+cnts = cv2.findContours(canny_output.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 if len(cnts) == 2:
     cnts = cnts[0]
