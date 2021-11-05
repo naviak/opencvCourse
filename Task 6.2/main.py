@@ -6,11 +6,11 @@ from scipy.spatial import distance
 
 # load the image, convert it to grayscale, blur it slightly,
 # and threshold it
-image = cv2.imread('shapes.jpg')
+image = cv2.imread('kl.jpg')
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
-cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+canny_output = cv2.Canny(gray, 100, 100)
+cnts = cv2.findContours(canny_output.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
 cnts = imutils.grab_contours(cnts)
 imgshape = np.asarray(image.shape[:2])
@@ -33,10 +33,10 @@ for c in cnts:
 
     if np.any(4 * dists[arg] > imgshape):
         cv2.putText(image, "BIG", (cX + 20, cY + 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 3)
     else:
         cv2.putText(image, "small", (cX + 20, cY + 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 7)
     # show the image
 
 cv2.imshow("Image", image)
