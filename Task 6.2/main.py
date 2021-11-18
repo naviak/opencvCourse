@@ -1,5 +1,7 @@
+import scipy.spatial
 from cv2 import cv2
 import numpy as np
+import scipy
 from imutils import contours
 
 
@@ -15,7 +17,7 @@ paths = [
     "plnt.jpg",
 ]
 
-img = cv2.imread(paths[1])
+img = cv2.imread(paths[0])
 img = clipImg(img, 600)
 
 controlls_window_name = 'controlls'
@@ -170,7 +172,8 @@ while True:
     for idx, c in enumerate(contours):
         x, y, w, h = cv2.boundingRect(c)
         # point in bounding box
-
+        ds = [scipy.spatial.distance.minkowski(c[i], c[j]) for i in range(len(c) - 1) for j in range(i, len(c))]
+        ln = np.max(ds)
         hull = cv2.convexHull(c)
 
         area = cv2.contourArea(hull)
@@ -183,10 +186,8 @@ while True:
                    (np.int32(x + w / 2 - 40), np.int32(y + h / 2)), font, 0.6, fontColor, thickness)
 
         size_label = 'small'
-        if area_ratio < 1:
+        if ln < max(canvas.shape[0], canvas.shape[1]) / 4:
             size_label = 'small'
-        elif area_ratio < 5:
-            size_label = 'medium'
         else:
             size_label = 'large'
 
