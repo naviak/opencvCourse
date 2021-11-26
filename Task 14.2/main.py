@@ -1,31 +1,11 @@
-import requests
-from bs4 import BeautifulSoup
-from PIL import Image
-import requests
-import numpy as np
-from io import BytesIO
 from cv2 import cv2 as cv
 import numpy as np
 from imutils import contours
 from matplotlib import pyplot as plt
 from functools import cmp_to_key
-
+from bs4 import BeautifulSoup
+import requests
 time_region_width = 40
-
-id_match = 413134
-page_url = "https://game-tournaments.com/dota-2/d2cl-2021-season-5/group-stage/khan-vs-hydra-kir-"
-
-page_url = page_url + str(id_match)
-
-html = requests.get(page_url)
-
-soup = BeautifulSoup(html.content, 'html.parser')
-
-res = soup.find_all('a', 'g-rezults')[0]["href"]
-res_url = 'https://game-tournaments.com' + res
-response = requests.get(res_url)
-img = np.asarray(bytearray(response.content), dtype='uint8')
-print(img)
 
 
 def clipImg(image, max_size):
@@ -42,7 +22,7 @@ class Number:
         self.isColon = isColon
 
 
-def find_region(method, img, template):
+def find_reg(method, img, template):
     w, h = template.shape[::-1]
 
     res = cv.matchTemplate(img, template, method)
@@ -90,7 +70,7 @@ def math_time(image):
     # seems to work 'OK'
     method = eval('cv.TM_CCOEFF_NORMED')
 
-    top_left, bottom_right, _ = find_region(method, img, template)
+    top_left, bottom_right, _ = find_reg(method, img, template)
 
     time_region = img[top_left[1]:bottom_right[1], bottom_right[0]:bottom_right[0] + time_region_width]
 
@@ -120,10 +100,45 @@ def math_time(image):
     return time, time_region, registered_numbers
 
 
-img = cv.imdecode(img, cv.IMREAD_COLOR)
+def match_time_number(number, game=1):
+    page = int(number / 20) + 1
+    idx = number % 20
+    page_url = "https://game-tournaments.com/dota-2/matches"
+    headers = {'content-type': 'application/x-www-form-urlencoded; charset=UTF-8', 'x-requested-with': 'XMLHttpRequest'}
+
+    raw_data = 'game=dota-2&rid=matches&ajax=block_matches_past&data%5Bs%5D=' + str(
+        page) + '&data%5Btype%5D=gg&data%5Bscore%5D=0'
+
+    page = requests.post(page_url, headers=headers, data=raw_data)
+
+    soup = BeautifulSoup(page.content, "html.parser")
+    job_elements = soup.find_all("span", class_='mbutton tresult')
+    id = job_elements[idx]["data-mid"]
+    print(f"Match id is {id}")
+
+    return match_time_id(id, game)
 
 
-time, region, boxes = math_time(img)
+def match_time_id(id, game_num=1):
+    page_url = "https://game-tournaments.com/dota-2/bts-pro-series-season-9/sea/boom-vs-nigma-galaxy-sea-" + str(id)
+    page = requests.get(page_url)
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    job_elements = soup.find_all("a", class_="g-rezults")
+
+    address = job_elements[0]["href"]
+    image_url = 'https://en.game-tournaments.com' + address
+
+    page = requests.get(image_url)
+    image = np.asarray(bytearray(page.content), dtype="uint8")
+    image = cv.imdecode(image, cv.IMREAD_COLOR)
+
+    return math_time(image), image
+
+
+id = 2
+
+(time, region, boxes), img = match_time_number(id)
 
 canvas = cv.cvtColor(region, cv.COLOR_GRAY2BGR)
 
@@ -132,7 +147,7 @@ for box in boxes:
 
 canvas = clipImg(canvas, 500)
 
-print(time)
+print(f'Time of game {time}')
 
 while True:
 
